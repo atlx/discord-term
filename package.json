@@ -5,7 +5,7 @@
     "main": "dist/app.js",
     "scripts": {
         "build": "tsc",
-        "start": "npm run build && node dist/app.js"
+        "start": "yarn run build && node dist/app.js"
     },
     "keywords": [
         "discord"
