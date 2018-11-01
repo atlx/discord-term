@@ -217,8 +217,10 @@ export default class Display {
                     modifiers.push(chalk.green("$"));
                 }
             }
-
-            this.appendUserMessage(msg.author.tag, msg.content, modifiers);
+            const messageContent = msg.content.replace(/{\/?([a-zA-Z-]+)}/g, (_____, p) => {
+                return `{ ${p}}`;
+            });
+            this.appendUserMessage(msg.author.tag, messageContent, modifiers);
         }
         else if (msg.channel.type === "dm") {
             this.appendSpecialMessage(`${chalk.green("<=")} DM`, msg.author.tag, msg.content, "blue");
