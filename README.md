@@ -7,3 +7,15 @@ Am extensible Discord terminal client. Can be used with bot or user tokens.
 ### Screenshots
 
 ![Discord Terminal](https://i.imgur.com/CBbhXTP.gif)
+
+### Get Started
+
+Setting up is extremely easy. Clone the repository and issue the following commands:
+
+`$ npm install`
+
+`$ npm start`
+
+That's it!
+
+Pst. Consider starring the repository if you like it! <3
