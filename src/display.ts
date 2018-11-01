@@ -217,10 +217,13 @@ export default class Display {
                     modifiers.push(chalk.green("$"));
                 }
             }
-            const messageContent = msg.content.replace(/{\/?([a-zA-Z-]+)}/g, (_____, p) => {
+            msg.content = msg.content.replace(/{\/?([a-zA-Z-]+)}/g, (_____, p) => {
                 return `{ ${p}}`;
             });
-            this.appendUserMessage(msg.author.tag, messageContent, modifiers);
+            msg.content = msg.content.replace(/\*{2}(.+)\*{2}/g, (_____, p) => {
+                return `{bold}${p}{/bold}`;
+            });
+            this.appendUserMessage(msg.author.tag, msg.content, modifiers);
         }
         else if (msg.channel.type === "dm") {
             this.appendSpecialMessage(`${chalk.green("<=")} DM`, msg.author.tag, msg.content, "blue");
