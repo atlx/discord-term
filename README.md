@@ -12,9 +12,9 @@ Am extensible Discord terminal client. Can be used with bot or user tokens.
 
 Setting up is extremely easy. Clone the repository and issue the following commands:
 
-`$ npm install`
+`$ yarn install`
 
-`$ npm start`
+`$ yarn start`
 
 That's it!
 
