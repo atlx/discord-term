@@ -1,4 +1,4 @@
-import {TextChannel, Guild, Client, Message, Channel, Snowflake, User, DMChannel} from "discord.js";
+import {TextChannel, Guild, Client, Message, Channel, Snowflake, User, DMChannel, Collection} from "discord.js";
 import Utils from "./utils";
 import blessed, {Widgets} from "blessed";
 import chalk from "chalk";
@@ -1220,6 +1220,22 @@ export default class Display {
         this.state.channel = channel;
         this.updateTitle();
         this.appendSystemMessage(`Switched to channel '{bold}${this.state.channel.name}{/bold}'`);
+        this.loadMessages(10);
+
+        return this;
+    }
+
+    public loadMessages(count: number): this {
+        const channel: TextChannel = this.state.channel;
+
+        channel.fetchMessages({limit: count}).then((messages: Collection<Snowflake, Message>) => {
+            for (let msg of messages.array()) {
+                this.handleMessage(msg);
+            }
+        }).catch((error: Error) => {
+            // can't read messages :thonk:
+            // the program will log this for us iirc
+        });
 
         return this;
     }
