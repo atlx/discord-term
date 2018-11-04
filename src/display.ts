@@ -290,7 +290,8 @@ export default class Display {
                 content = Encryption.decrypt(content.substr(4));
             }
             catch (error) {
-                this.appendSystemMessage(`Could not decrypt message: ${error.message}`);
+                // Don't show error
+                //this.appendSystemMessage(`Could not decrypt message: ${error.message}`);
             }
         }
 
@@ -1271,7 +1272,7 @@ export default class Display {
 
             for (let i: number = 0; i < this.state.wordPins.length; i++) {
                 while (splitLine.includes(this.state.wordPins[i])) {
-                    splitLine[splitLine.indexOf(this.state.wordPins[i])] = chalk.bgGreen.white(this.state.wordPins[i]);
+                    splitLine[splitLine.indexOf(this.state.wordPins[i])] = chalk.bgCyan.white(this.state.wordPins[i]);
                 }
             }
 
