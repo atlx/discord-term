@@ -1,23 +1,20 @@
-import crypto, {Decipher, Cipher} from "crypto";
+import Cryptr from 'cryptr';
 
 export default abstract class Encryption {
-    public static encrypt(message: string, password: string): string {
-        const cipher: Cipher = crypto.createCipher("aes-256-cbc", password);
 
-        let result = cipher.update(message, "utf8", "hex");
+    public static key: string = "discord-term";
+    public static cryptr: Cryptr = new Cryptr(Encryption.key);
 
-        result += cipher.final("hex");
-
-        return result;
+    public static setKey(key: string): void {
+        Encryption.key = key;
+        Encryption.cryptr = new Cryptr(key);
     }
 
-    public static decrypt(encryptedMessage: string, password: string): string {
-        const decipher: Decipher = crypto.createDecipher("aes-256-cbc", password);
+    public static encrypt(message: string): string {
+        return Encryption.cryptr.encrypt(message);   
+    }
 
-        let result = decipher.update(encryptedMessage, "hex", "utf8")
-
-        result += decipher.final("utf8");
-
-        return result;
+    public static decrypt(encryptedMessage: string): string {
+        return Encryption.cryptr.decrypt(encryptedMessage);
     }
 }

@@ -195,8 +195,11 @@ export default class Display {
     private state: IAppState;
 
     public constructor(options: Partial<IAppOptions> = defaultAppOptions, commands: Map<string, ICommandHandler> = new Map(), state: Partial<IAppState> = defaultAppState) {
+        let option: IAppOptions = defaultAppOptions;
+        option.screen.enableInput();
+        
         this.options = {
-            ...defaultAppOptions,
+            ...option,
             ...options
         };
 
@@ -284,7 +287,7 @@ export default class Display {
 
         if (content.startsWith("$dt_")) {
             try {
-                content = Encryption.decrypt(content.substr(4), this.state.decriptionKey);
+                content = Encryption.decrypt(content.substr(4));
             }
             catch (error) {
                 this.appendSystemMessage(`Could not decrypt message: ${error.message}`);
@@ -472,7 +475,7 @@ export default class Display {
                     let msg: string = input;
 
                     if (this.state.encrypt) {
-                        msg = "$dt_" + Encryption.encrypt(msg, this.state.decriptionKey);
+                        msg = "$dt_" + Encryption.encrypt(msg);
                     }
 
                     this.state.channel.send(msg).catch((error: Error) => {
@@ -741,6 +744,7 @@ export default class Display {
             }
 
             this.state.decriptionKey = args[0];
+            Encryption.setKey(args[0]);
             this.appendSystemMessage(`Using decryption key '{bold}${args[0]}{/bold}'`);
         });
 
@@ -748,6 +752,7 @@ export default class Display {
             this.state.encrypt = !this.state.encrypt;
 
             if (this.state.encrypt) {
+                Encryption.setKey(this.state.decriptionKey);
                 this.appendSystemMessage("Now encrypting messages");
             }
             else {
@@ -1220,7 +1225,7 @@ export default class Display {
         this.state.channel = channel;
         this.updateTitle();
         this.appendSystemMessage(`Switched to channel '{bold}${this.state.channel.name}{/bold}'`);
-        this.loadMessages(10);
+        this.loadMessages(50);
 
         return this;
     }
@@ -1229,7 +1234,7 @@ export default class Display {
         const channel: TextChannel = this.state.channel;
 
         channel.fetchMessages({limit: count}).then((messages: Collection<Snowflake, Message>) => {
-            for (let msg of messages.array()) {
+            for (let msg of messages.array().reverse()) {
                 this.handleMessage(msg);
             }
         }).catch((error: Error) => {
