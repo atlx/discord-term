@@ -2,33 +2,38 @@ import App from "./app";
 import Encryption from "./encryption";
 
 export default function setupEvents(app: App): void {
+    // Abstract atoms & blessed elements for short access aliases.
+    const screen = app.ui.screen;
+    const composer = app.ui.atoms.composer;
+    const composerEl = composer.unwrap();
+
     // Screen.
-    app.options.screen.key("C-c", async () => {
+    screen.key("C-c", async () => {
         await app.shutdown();
     });
 
-    app.options.screen.key("C-x", () => {
+    screen.key("C-x", () => {
         process.exit(0);
     });
 
-    app.options.screen.key("space", () => {
-        app.options.nodes.input.focus();
+    screen.key("space", () => {
+        composer.focus();
     });
 
-    // Input.
-    app.options.nodes.input.on("keypress", () => {
+    // Composer.
+    composerEl.on("keypress", () => {
         // TODO: If logged in.
         //app.startTyping();
     });
 
-    app.options.nodes.input.key("tab", () => {
-        const rawInput: string = app.getInput();
+    composerEl.key("tab", () => {
+        const rawInput: string = composer.text;
         const input: string = rawInput.substr(app.options.commandPrefix.length);
 
         if (rawInput.startsWith(app.options.commandPrefix) && input.length >= 2 && input.indexOf(" ") === -1) {
             for (let [name, handler] of app.commands) {
                 if (name.startsWith(input)) {
-                    app.clearInput(`${app.options.commandPrefix}${name} `);
+                    composer.setText(`${app.options.commandPrefix}${name} `);
 
                     break;
                 }
@@ -36,7 +41,7 @@ export default function setupEvents(app: App): void {
         }
     });
 
-    app.options.nodes.input.key("enter", () => {
+    composerEl.key("enter", () => {
         let input: string = app.getInput(true);
 
         const splitInput: string[] = input.split(" ");
@@ -85,35 +90,35 @@ export default function setupEvents(app: App): void {
             }
         }
 
-        app.clearInput();
+        composer.clearText();
     });
 
-    app.options.nodes.input.key("escape", () => {
-        if (app.getInput().startsWith(app.options.commandPrefix)) {
-            app.clearInput(app.options.commandPrefix);
+    composerEl.key("escape", () => {
+        if (composer.text.startsWith(app.options.commandPrefix)) {
+            composer.setText(app.options.commandPrefix);
         }
         else {
-            app.clearInput();
+            composer.clearText();
         }
     });
 
-    app.options.nodes.input.key("up", () => {
+    composerEl.key("up", () => {
         if (app.state.get().lastMessage) {
-            app.clearInput(`${app.options.commandPrefix}edit ${app.state.get().lastMessage.id} ${app.state.get().lastMessage.content}`);
+            composer.setText(`${app.options.commandPrefix}edit ${app.state.get().lastMessage.id} ${app.state.get().lastMessage.content}`);
         }
     });
 
-    app.options.nodes.input.key("down", () => {
+    composerEl.key("down", () => {
         if (app.client.user && app.client.user.lastMessage && app.client.user.lastMessage.deletable) {
             app.client.user.lastMessage.delete();
         }
     });
 
-    app.options.nodes.input.key("C-c", async () => {
+    composerEl.key("C-c", async () => {
         await app.shutdown();
     });
 
-    app.options.nodes.input.key("C-x", () => {
+    composerEl.key("C-x", () => {
         process.exit(0);
     });
 }

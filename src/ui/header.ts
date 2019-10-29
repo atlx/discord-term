@@ -60,6 +60,7 @@ export default class Header extends TextAtom<blessed.Widgets.BoxElement> {
 
     public setText(text: string): void {
         this.element.content = text;
+        this.render();
     }
 
     public display(text: string, autoHide: boolean = false): void {

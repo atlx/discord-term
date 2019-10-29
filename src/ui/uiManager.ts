@@ -7,6 +7,7 @@ import Messages from "./messages";
 import {defaultAppOptions} from "../constant";
 import Atom from "./atom";
 import App from "../app";
+import BlueprintSet from "../misc/blueprintSet";
 
 export enum UiManagerEvent {
     AtomAttached = "atomAttached",
@@ -35,8 +36,13 @@ export default class UiManager extends EventEmitter {
 
     public readonly app: App;
 
-    public constructor(app: App, atoms: IUiAtoms, screenOptions: any = defaultAppOptions.screenOptions, allAtoms: Set<Atom> = new Set()) {
+    public constructor(app: App, atomBlueprints: BlueprintSet, screenOptions: any = defaultAppOptions.screenOptions, allAtoms: Set<Atom> = new Set()) {
         super();
+
+        // Verify atom blueprints.
+        if (!atomBlueprints.instanceOf(Atom)) {
+            throw new Error("Expected atom blueprints' types to inherit from the base Atom class");
+        }
 
         this.app = app;
         this.screen = new blessed.Widgets.Screen(screenOptions);

@@ -1,6 +1,6 @@
 import blessed from "blessed";
 import {EventEmitter} from "events";
-import {PromiseOr, LockCallback} from "../core/helpers";
+import {PromiseOr, LockCallback} from "../misc/helpers";
 import UiManager from "./uiManager";
 import State from "../state/state";
 import App from "../app";
@@ -33,7 +33,41 @@ export enum AtomEvent {
     LockChanged = "lockChanged"
 }
 
-export default abstract class Atom<T extends blessed.Widgets.BlessedElement = blessed.Widgets.BlessedElement> extends EventEmitter {
+export interface IAtom<T extends blessed.Widgets.BlessedElement = blessed.Widgets.BlessedElement> {
+    readonly locked: boolean;
+
+    readonly visible: boolean;
+
+    init(): PromiseOr<void>;
+
+    setVisibility(visible: boolean): void;
+
+    show(): void;
+
+    hide(): void;
+
+    toggleVisibility(): void;
+
+    destroy(): void;
+
+    setLocked(locked: boolean): void;
+
+    lock(): void;
+
+    unlock(): void;
+
+    lockUntil(callback: LockCallback): void;
+
+    render(): PromiseOr<void>;
+
+    unwrap(): T;
+
+    update(properties: Partial<IAtomUpdateProperties>): void;
+
+    updateOn(eventSource: EventEmitter, event: AtomEvent | string, properties: Partial<IAtomUpdateProperties>): void;
+}
+
+export default abstract class Atom<T extends blessed.Widgets.BlessedElement = blessed.Widgets.BlessedElement> extends EventEmitter implements IAtom<T> {
     protected readonly element: T;
 
     protected readonly manager: UiManager;
@@ -91,6 +125,8 @@ export default abstract class Atom<T extends blessed.Widgets.BlessedElement = bl
         else {
             this.emit(AtomEvent.Hidden);
         }
+
+        this.render();
     }
 
     public show(): void {

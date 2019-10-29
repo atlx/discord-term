@@ -69,6 +69,7 @@ export default class Composer extends TextAtom<blessed.Widgets.TextboxElement> {
 
         this.element.setText(text);
         this.emit(TextAtomEvent.TextChanged, text);
+        this.render();
     }
 
     public focus(): void {

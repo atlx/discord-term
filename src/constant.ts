@@ -1,8 +1,4 @@
 import {IAppOptions} from "./app";
-import Channels from "./ui/channels";
-import Composer from "./ui/composer";
-import Header from "./ui/header";
-import Messages from "./ui/messages";
 
 export const tips: string[] = [
     "You can use the {bold}{prefix}sync{/bold} command to discard unsaved changes and reload saved state",
@@ -27,13 +23,6 @@ export const defaultAppOptions: IAppOptions = {
     screenOptions: {
         smartCSR: true,
         fullUnicode: true
-    },
-
-    uiAtoms: {
-        channels: new Channels(),
-        composer: new Composer(),
-        header: new Header(),
-        messages: new Messages()
     }
 };
 

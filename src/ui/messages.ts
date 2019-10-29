@@ -91,6 +91,11 @@ export default class Messages extends Atom<blessed.Widgets.BoxElement> {
         this.setScrollPercentage(100);
     }
 
+    public clearMessages(): void {
+        this.element.content = "";
+        this.render();
+    }
+
     /**
      * Add a message to the message list, scroll and render atom.
      * If multiple messages are going to be added, use the bulk method

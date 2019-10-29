@@ -6,7 +6,6 @@ import fs from "fs";
 import clipboardy from "clipboardy";
 import path from "path";
 import Encryption from "./encryption";
-import {defaultAppOptions} from "./constant";
 import Pattern from "./pattern";
 import setupEvents from "./events";
 import setupInternalCommands from "./commands/internal";
@@ -16,6 +15,8 @@ import {defaultState} from "./state/stateConstants";
 import MessageFactory from "./core/messageFactory";
 import Tags from "./tags";
 import UiManager, {IUiAtoms} from "./ui/uiManager";
+import Bootstrap from "./bootstrap";
+import {defaultAppOptions} from "./constant";
 
 export interface IAppOptions extends IStateOptions {
     readonly maxMessages: number;
@@ -31,8 +32,6 @@ export interface IAppOptions extends IStateOptions {
     readonly clientOptions: ClientOptions;
 
     readonly pluginsPath: string;
-
-    readonly uiAtoms: IUiAtoms;
 }
 
 export enum SpecialSenders {
@@ -79,7 +78,7 @@ export default class App extends EventEmitter {
 
         this.state = new State(this, this.options, this.options.initialState);
         this.client = new Client(this.options.clientOptions);
-        this.ui = new UiManager(null, this.options.uiAtoms);
+        this.ui = new UiManager(this, Bootstrap.uiAtomBlueprints);
         this.commands = commands;
         this.message = new MessageFactory(this);
         this.tags = new Tags(this.state);
@@ -347,7 +346,7 @@ export default class App extends EventEmitter {
         await this.ui.init();
     }
 
-    public setActiveGuild(guild: Guild): this {
+    public setActiveGuild(guild: Guild): void {
         this.state.update({
             guild
         });
@@ -365,7 +364,5 @@ export default class App extends EventEmitter {
 
         this.updateTitle();
         this.updateChannels(true);
-
-        return this;
     }
 }

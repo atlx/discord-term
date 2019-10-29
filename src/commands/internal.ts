@@ -4,8 +4,13 @@ import App from "../app";
 import {Snowflake, Message, User, TextChannel, Guild} from "discord.js";
 import {tips} from "../constant";
 import Utils from "../utils";
+import Messages from "../ui/messages";
+import Channels from "../ui/channels";
 
 export default function setupInternalCommands(app: App): void {
+    const messages: Messages = app.ui.atoms.messages;
+    const channels: Channels = app.ui.atoms.channels;
+
     app.commands.set("login", (args: string[]) => {
         app.login(args[0]);
     });
@@ -195,7 +200,7 @@ export default function setupInternalCommands(app: App): void {
         const tip: string = tips[Utils.getRandomInt(0, tips.length - 1)]
             .replace("{prefix}", app.options.commandPrefix);
 
-        app.showHeader(tip, true);
+        app.ui.atoms.header.display(tip, true);
     });
 
     app.commands.set("dm", async (args: string[]) => {
@@ -218,7 +223,7 @@ export default function setupInternalCommands(app: App): void {
     });
 
     app.commands.set("fullscreen", () => {
-        app.toggleChannels();
+        app.ui.atoms.channels.toggleVisibility();
     });
 
     app.commands.set("me", () => {
@@ -328,8 +333,8 @@ export default function setupInternalCommands(app: App): void {
     });
 
     app.commands.set("clear", () => {
-        app.options.nodes.messages.setContent("");
-        app.render(true);
+        messages.clearMessages();
+        app.ui.render(true);
     });
 
     app.commands.set("c", (args: string[]) => {
@@ -338,13 +343,13 @@ export default function setupInternalCommands(app: App): void {
         }
         else if (app.state.get().guild.channels.has(args[0])) {
             // TODO: Verify that it's a text channel.
-            app.setActiveChannel(app.state.get().guild.channels.get(args[0]) as TextChannel);
+            channels.setActiveChannel(app.state.get().guild.channels.get(args[0]) as TextChannel);
         }
         else {
             const channel: TextChannel = app.state.get().guild.channels.array().find((channel) => channel.type === "text" && (channel.name === args[0] || "#" + channel.name === args[0])) as TextChannel;
 
             if (channel) {
-                app.setActiveChannel(channel as TextChannel);
+                channels.setActiveChannel(channel as TextChannel);
             }
             else {
                 app.message.system(`Such channel does not exist in guild '${app.state.get().guild.name}'`);
@@ -362,6 +367,6 @@ export default function setupInternalCommands(app: App): void {
     });
 
     app.commands.set("reset", () => {
-        app.render(true);
+        app.ui.render(true);
     });
 }
