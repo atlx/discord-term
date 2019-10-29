@@ -457,37 +457,6 @@ export default class App extends EventEmitter {
         return this;
     }
 
-    public showHeader(text: string, autoHide: boolean = false): boolean {
-        if (!text) {
-            throw new Error("[App.showHeader] Expecting header text");
-        }
-
-        this.options.nodes.header.content = `[!] ${text}`;
-
-        if (!this.options.nodes.header.visible) {
-            // Messages.
-            this.options.nodes.messages.top = "0%+3";
-            this.options.nodes.messages.height = "100%-6";
-
-            // Header.
-            this.options.nodes.header.hidden = false;
-        }
-
-        if (autoHide) {
-            if (this.state.get().autoHideHeaderTimeout) {
-                clearTimeout(this.state.get().autoHideHeaderTimeout);
-            }
-
-            this.state.update({
-                autoHideHeaderTimeout: setTimeout(this.hideHeader.bind(this), text.length * this.options.headerAutoHideTimeoutPerChar)
-            });
-        }
-
-        this.render();
-
-        return true;
-    }
-
     public setActiveChannel(channel: TextChannel): this {
         this.stopTyping();
 

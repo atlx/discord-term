@@ -1,10 +1,11 @@
 import blessed from "blessed";
-import Atom, {AtomEvent} from "./atom";
+import {AtomEvent} from "./atom";
 import {defaultState} from "../state/stateConstants";
 import UiManager from "./uiManager";
 import {updatePreset} from "../constant";
+import TextAtom from "./textAtom";
 
-export default class Header extends Atom<blessed.Widgets.BoxElement> {
+export default class Header extends TextAtom<blessed.Widgets.BoxElement> {
     public constructor(manager: UiManager) {
         super(manager, blessed.box({
             top: "0%",
@@ -36,5 +37,33 @@ export default class Header extends Atom<blessed.Widgets.BoxElement> {
             AtomEvent.Shown,
             updatePreset.expand
         );
+    }
+
+    public get text(): string {
+        return this.element.content;
+    }
+
+    public setText(text: string): void {
+        this.element.content = text;
+    }
+
+    public display(text: string, autoHide: boolean = false): void {
+        if (!text) {
+            throw new Error("Text cannot be empty or null");
+        }
+
+        this.setText(`[!] ${text}`);
+
+        if (autoHide) {
+            if (this.state.get().autoHideHeaderTimeout) {
+                clearTimeout(this.state.get().autoHideHeaderTimeout);
+            }
+
+            this.state.update({
+                autoHideHeaderTimeout: setTimeout(this.hideHeader.bind(this), text.length * this.options.headerAutoHideTimeoutPerChar)
+            });
+        }
+
+        this.show();
     }
 }

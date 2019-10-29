@@ -4,6 +4,7 @@ import {defaultState} from "../state/stateConstants";
 import {PromiseOr} from "../core/helpers";
 import UiManager from "./uiManager";
 import {updatePreset} from "../constant";
+import {HeaderEvent} from "./header";
 
 export enum MessagesEvent {
     ScrollPercentageChanged = "scrollPercentageChanged",
@@ -30,22 +31,36 @@ export default class Messages extends Atom<blessed.Widgets.BoxElement> {
     }
 
     public init(): PromiseOr<void> {
+        // Extract atoms for short access alias.
+        const {atoms} = this.manager;
+
         // Shrink once channels atom is shown.
         this.updateOn(
-            this.manager.atoms.channels,
+            atoms.channels,
             AtomEvent.Shown,
             updatePreset.shrink
         );
 
         // Expand once channels atom is hidden.
         this.updateOn(
-            this.manager.atoms.channels,
+            atoms.channels,
             AtomEvent.Hidden,
             updatePreset.expand
         );
 
+        // Adjust height & position once header atom is shown.
         this.updateOn(
-            this.manager.atoms.header,
+            atoms.header,
+            AtomEvent.Shown,
+            {
+                top: "0%+3",
+                height: "100%-6"
+            }
+        );
+
+        // Expand height once header atom is hidden.
+        this.updateOn(
+            atoms.header,
             AtomEvent.Hidden,
             {
                 top: "0%",
