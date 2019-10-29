@@ -84,7 +84,7 @@ export default class App extends EventEmitter {
     public async setup(init: boolean = true): Promise<this> {
         // Discord events.
         this.client.on("ready", () => {
-            this.hideHeader();
+            this.ui.atoms.header.hide();
 
             this.state.update({
                 token: this.client.token
@@ -98,7 +98,7 @@ export default class App extends EventEmitter {
                 this.setActiveGuild(firstGuild);
             }
 
-            this.showChannels();
+            this.ui.atoms.channels.show();
             this.state.saveSync();
         });
 
@@ -237,34 +237,6 @@ export default class App extends EventEmitter {
 
             this.state.get().channel.stopTyping();
         }
-
-        return this;
-    }
-
-    public getInput(clear: boolean = false): string {
-        const value: string = this.options.nodes.input.getValue();
-
-        if (clear) {
-            this.clearInput();
-        }
-
-        return value.trim();
-    }
-
-    public clearInput(newValue: string = ""): this {
-        this.options.nodes.input.setValue(newValue);
-
-        if (this.options.screen.focused !== this.options.nodes.input) {
-            this.options.nodes.input.focus();
-        }
-
-        this.render();
-
-        return this;
-    }
-
-    public appendInput(value: string): this {
-        this.clearInput(this.getInput() + value);
 
         return this;
     }
@@ -416,13 +388,13 @@ export default class App extends EventEmitter {
 
     private updateTitle(): this {
         if (this.state.get().guild && this.state.get().channel) {
-            this.options.screen.title = `Discord Terminal @ ${this.state.get().guild.name} # ${this.state.get().channel.name}`;
+            this.ui.setWindowTitle(`Discord Terminal @ ${this.state.get().guild.name} # ${this.state.get().channel.name}`);
         }
         else if (this.state.get().guild) {
-            this.options.screen.title = `Discord Terminal @ ${this.state.get().guild.name}`;
+            this.ui.setWindowTitle(`Discord Terminal @ ${this.state.get().guild.name}`);
         }
         else {
-            this.options.screen.title = "Discord Terminal";
+            this.ui.setWindowTitle("Discord Terminal");
         }
 
         return this;
@@ -452,7 +424,7 @@ export default class App extends EventEmitter {
             this.login(process.env.TOKEN);
         }
         else {
-            this.options.nodes.input.setValue(`${this.options.commandPrefix}login `);
+            this.ui.atoms.composer.setText(`${this.options.commandPrefix}login `);
             this.showHeader("{bold}Pro Tip.{/bold} Set the environment variable {bold}TOKEN{/bold} to automagically login!");
             this.message.system("Welcome! Please login using {bold}/login <token>{/bold} or {bold}/help{/bold} to view available commands");
         }
@@ -510,23 +482,6 @@ export default class App extends EventEmitter {
                 autoHideHeaderTimeout: setTimeout(this.hideHeader.bind(this), text.length * this.options.headerAutoHideTimeoutPerChar)
             });
         }
-
-        this.render();
-
-        return true;
-    }
-
-    public hideHeader(): boolean {
-        if (!this.options.nodes.header.visible) {
-            return false;
-        }
-
-        // Messages.
-        this.options.nodes.messages.top = "0%";
-        this.options.nodes.messages.height = "100%-3";
-
-        // Header.
-        this.options.nodes.header.hidden = true;
 
         this.render();
 

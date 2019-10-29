@@ -9,8 +9,8 @@ export default class MessageFactory {
     }
 
     // TODO: Also include time.
-    public create(sender: string, message: string, senderColor: string = "white", messageColor: string = this.app.state.get().themeData.messages.foregroundColor): this {
-        let messageString: string = message.toString();
+    public create(sender: string, text: string, senderColor: string = "white", messageColor: string = this.app.state.get().themeData.messages.foregroundColor): this {
+        let messageString: string = text.toString();
 
         if (messageColor.startsWith("#")) {
             messageString = chalk.hex(messageColor)(messageString);
@@ -21,16 +21,17 @@ export default class MessageFactory {
             return this;
         }
         else {
-            messageString = ((chalk as any)[messageColor] as any)(message);
+            messageString = ((chalk as any)[messageColor] as any)(text);
         }
 
-        let line: string = this.app.state.get().messageFormat
+        // Create the initial message string.
+        let message: string = this.app.state.get().messageFormat
             // TODO: Catch error if sender color doesn't exist.
             .replace("{sender}", chalk[senderColor](sender))
             .replace("{message}", messageString);
 
         if (sender !== `{bold}${SpecialSenders.System}{/bold}`) {
-            const splitLine: string[] = line.split(" ");
+            const splitLine: string[] = message.split(" ");
 
             for (let i: number = 0; i < this.app.state.get().wordPins.length; i++) {
                 while (splitLine.includes(this.app.state.get().wordPins[i])) {
@@ -38,12 +39,11 @@ export default class MessageFactory {
                 }
             }
 
-            line = splitLine.join(" ");
+            message = splitLine.join(" ");
         }
 
-        this.app.options.nodes.messages.pushLine(line);
-        this.app.options.nodes.messages.setScrollPerc(100);
-        this.app.render();
+        // Append the message to the messages list.
+        this.app.ui.atoms.messages.addMessage(message);
 
         return this;
     }

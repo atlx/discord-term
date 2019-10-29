@@ -7,6 +7,10 @@ export interface IAtomUpdateProperties {
     readonly width: string;
 
     readonly left: string;
+
+    readonly top: string;
+
+    readonly height: string;
 }
 
 export enum AtomEvent {
@@ -20,7 +24,9 @@ export enum AtomEvent {
 
     Render = "render",
 
-    PropertyUpdate = "propertyUpdate"
+    PropertyUpdate = "propertyUpdate",
+
+    LockChanged = "lockChanged"
 }
 
 export default abstract class Atom<T extends blessed.Widgets.BlessedElement = blessed.Widgets.BlessedElement> extends EventEmitter {
@@ -28,14 +34,21 @@ export default abstract class Atom<T extends blessed.Widgets.BlessedElement = bl
 
     protected readonly manager: UiManager;
 
+    protected _locked: boolean;
+
     public constructor(manager: UiManager, element: T) {
         super();
 
         this.manager = manager;
         this.element = element;
+        this._locked = false;
     }
 
     public abstract init(): PromiseOr<void>;
+
+    public get locked(): boolean {
+        return this._locked;
+    }
 
     public get visible(): boolean {
         return !this.element.hidden;
@@ -82,7 +95,42 @@ export default abstract class Atom<T extends blessed.Widgets.BlessedElement = bl
         this.emit(AtomEvent.Destroy);
     }
 
-    public render(): void {
+    public setLocked(locked: boolean): void {
+        // Do not continue if state is already set.
+        if (this._locked === locked) {
+            return;
+        }
+
+        this._locked = locked;
+        this.emit(AtomEvent.LockChanged, this._locked);
+    }
+
+    /**
+     * Prevents any further renders from occurring
+     * while locked.
+     */
+    public lock(): void {
+        this.setLocked(true);
+    }
+
+    /**
+     * Releases the lock, allowing renders to occur.
+     */
+    public unlock(): void {
+        this.setLocked(false);
+    }
+
+    /**
+     * Renders the element if the atom is unlocked.
+     * It is not recommended to attach event listerns
+     * onto the render event.
+     */
+    public render(): PromiseOr<void> {
+        // Do not continue if atom is locked.
+        if (this._locked) {
+            return;
+        }
+
         this.element.render();
         this.emit(AtomEvent.Render);
     }

@@ -5,7 +5,15 @@ import Composer from "./composer";
 import Header from "./header";
 import Messages from "./messages";
 import {defaultAppOptions} from "../constant";
-import Atom from "./atom";
+import Atom, {AtomEvent} from "./atom";
+
+export enum UiManagerEvent {
+    AtomAttached = "atomAttached",
+
+    Render = "render",
+
+    WindowTitleChanged = "windowTitleChanged"
+}
 
 export interface IUiAtoms {
     readonly channels: Channels;
@@ -22,11 +30,14 @@ export default class UiManager extends EventEmitter {
 
     public readonly screen: blessed.Widgets.Screen;
 
-    public constructor(atoms: IUiAtoms, screenOptions: any = defaultAppOptions.screenOptions) {
+    public readonly allAtoms: Set<Atom>;
+
+    public constructor(atoms: IUiAtoms, screenOptions: any = defaultAppOptions.screenOptions, allAtoms: Set<Atom> = new Set()) {
         super();
 
         this.screen = new blessed.Widgets.Screen(screenOptions);
         this.atoms = atoms;
+        this.allAtoms = allAtoms;
 
         // Attach built-in atoms.
         this.attachAtoms(
@@ -40,12 +51,35 @@ export default class UiManager extends EventEmitter {
     // TODO: Add a way to access attached atoms (non-built-in atoms).
     public attachAtoms(...atoms: Atom[]): void {
         for (const atom of atoms) {
-            this.screen.append(atom.unwrap());
-            this.emit("atomAttach", atom);
+            // Atom must not be currently attached.
+            if (!this.allAtoms.has(atom)) {
+                // Track atom.
+                this.allAtoms.add(atom);
+
+                // Append atom to the Blessed Screen's node list.
+                this.screen.append(atom.unwrap());
+
+                // And finally emit the corresponding event.
+                this.emit(UiManagerEvent.AtomAttached, atom);
+            }
         }
     }
 
-    public render(): void {
-        this.emit("render");
+    public setWindowTitle(title: string): void {
+        this.screen.title = title;
+        this.emit(UiManagerEvent.WindowTitleChanged);
+    }
+
+    /**
+     * Renders all attached atoms.
+     */
+    public async render(): Promise<void> {
+        // Loop through and render all attached atoms.
+        for (const atom of this.allAtoms) {
+            await atom.render();
+        }
+
+        // Emit the corresponding event.
+        this.emit(UiManagerEvent.Render);
     }
 }

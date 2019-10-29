@@ -4,6 +4,14 @@ import {defaultState} from "../state/stateConstants";
 import UiManager from "./uiManager";
 import {updatePreset} from "../constant";
 
+export enum ComposerEvent {
+    TextChanged = "textChanged",
+
+    TextCleared = "textCleared",
+
+    FocusChanged = "focusChanged"
+}
+
 export default class Composer extends Atom<blessed.Widgets.TextboxElement> {
     public constructor(manager: UiManager) {
         super(manager, blessed.textbox({
@@ -42,7 +50,26 @@ export default class Composer extends Atom<blessed.Widgets.TextboxElement> {
     }
 
     public setText(text: string): void {
+        // Do not continue if provided text is already set.
+        if (this.element.getText() === text) {
+            return;
+        }
+
         this.element.setText(text);
-        this.emit("textChanged", text);
+        this.emit(ComposerEvent.TextChanged, text);
+    }
+
+    public clearText(): void {
+        this.setText("");
+        this.emit(ComposerEvent.TextCleared);
+    }
+
+    public focus(): void {
+        this.element.focus();
+        this.emit(ComposerEvent.FocusChanged);
+    }
+
+    public appendText(text: string): void {
+        this.setText(this.text + text);
     }
 }
