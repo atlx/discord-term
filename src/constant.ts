@@ -1,6 +1,8 @@
 import {IAppOptions} from "./app";
-import blessed from "blessed";
-import {defaultState} from "./state/stateConstants";
+import Channels from "./ui/channels";
+import Composer from "./ui/composer";
+import Header from "./ui/header";
+import Messages from "./ui/messages";
 
 export const tips: string[] = [
     "You can use the {bold}{prefix}sync{/bold} command to discard unsaved changes and reload saved state",
@@ -22,70 +24,27 @@ export const defaultAppOptions: IAppOptions = {
     pluginsPath: "plugins",
     headerAutoHideTimeoutPerChar: 100,
 
-    screen: blessed.screen({
+    screenOptions: {
         smartCSR: true,
         fullUnicode: true
-    }),
+    },
 
-    nodes: {
-        messages: blessed.box({
-            top: "0%",
-            left: "0%",
-            width: "100%",
-            height: "100%-3",
+    uiAtoms: {
+        channels: new Channels(),
+        composer: new Composer(),
+        header: new Header(),
+        messages: new Messages()
+    }
+};
 
-            style: {
-                fg: defaultState.themeData.messages.foregroundColor,
-                bg: defaultState.themeData.messages.backgroundColor
-            },
+export const updatePreset = {
+    expand: {
+        width: "100%",
+        left: "0%"
+    },
 
-            scrollable: true,
-            tags: true,
-            padding: 1
-        }),
-
-        channels: blessed.box({
-            top: "0%",
-            left: "0%",
-            height: "100%",
-            width: "25%",
-            scrollable: true,
-            padding: 1,
-            hidden: true,
-
-            style: {
-                fg: defaultState.themeData.channels.foregroundColor,
-                bg: defaultState.themeData.channels.backgroundColor
-            } as any
-        }),
-
-        input: blessed.textbox({
-            style: {
-                fg: defaultState.themeData.input.foregroundColor,
-                bg: defaultState.themeData.input.backgroundColor
-            },
-
-            left: "0%",
-            bottom: "0",
-            width: "100%",
-            inputOnFocus: true,
-            height: "shrink",
-            padding: 1
-        }),
-
-        header: blessed.box({
-            style: {
-                fg: defaultState.themeData.header.foregroundColor,
-                bg: defaultState.themeData.header.backgroundColor
-            },
-
-            top: "0%",
-            left: "0%",
-            height: "0%+3",
-            padding: 1,
-            width: "100%",
-            hidden: true,
-            tags: true
-        })
+    shrink: {
+        width: "75%+2",
+        left: "25%"
     }
 };

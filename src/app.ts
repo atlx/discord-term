@@ -15,23 +15,12 @@ import State, {IState, IStateOptions} from "./state/state";
 import {defaultState} from "./state/stateConstants";
 import MessageFactory from "./core/messageFactory";
 import Tags from "./tags";
-
-export type IAppNodes = {
-    readonly messages: Widgets.BoxElement;
-
-    readonly channels: Widgets.BoxElement;
-
-    readonly input: Widgets.TextboxElement;
-
-    readonly header: Widgets.BoxElement;
-}
+import UiManager, {IUiAtoms} from "./ui/uiManager";
 
 export interface IAppOptions extends IStateOptions {
     readonly maxMessages: number;
 
-    readonly screen: Widgets.Screen
-
-    readonly nodes: IAppNodes;
+    readonly screenOptions: blessed.Widgets.IScreenOptions;
 
     readonly commandPrefix: string;
 
@@ -42,6 +31,8 @@ export interface IAppOptions extends IStateOptions {
     readonly clientOptions: ClientOptions;
 
     readonly pluginsPath: string;
+
+    readonly uiAtoms: IUiAtoms;
 }
 
 export enum SpecialSenders {
@@ -72,6 +63,8 @@ export default class App extends EventEmitter {
 
     public readonly tags: Tags;
 
+    public readonly ui: UiManager;
+
     public constructor(options?: Partial<IAppOptions>, commands: Map<string, ICommandHandler> = new Map()) {
         super();
 
@@ -82,6 +75,7 @@ export default class App extends EventEmitter {
 
         this.state = new State(this, this.options, this.options.initialState);
         this.client = new Client(this.options.clientOptions);
+        this.ui = new UiManager(null, this.options.uiAtoms);
         this.commands = commands;
         this.message = new MessageFactory(this);
         this.tags = new Tags(this.state);
@@ -122,12 +116,6 @@ export default class App extends EventEmitter {
         this.client.on("guildDelete", (guild: Guild) => {
             this.message.system(`Left guild '{bold}${guild.name}{/bold}' (${guild.memberCount} members)`);
         });
-
-        // Append nodes.
-        this.options.screen.append(this.options.nodes.input);
-        this.options.screen.append(this.options.nodes.messages);
-        this.options.screen.append(this.options.nodes.channels);
-        this.options.screen.append(this.options.nodes.header);
 
         // Sync state.
         await this.state.sync();
@@ -209,54 +197,6 @@ export default class App extends EventEmitter {
         else if (this.state.get().globalMessages) {
             this.message.special("Global", msg.author.tag, content);
         }
-    }
-
-    public showChannels(): this {
-        if (this.options.nodes.channels.hidden) {
-            // Messages.
-            this.options.nodes.messages.width = "75%+2";
-            this.options.nodes.messages.left = "25%";
-
-            // Input.
-            this.options.nodes.input.width = "75%+2";
-            this.options.nodes.input.left = "25%";
-
-            // Header.
-            this.options.nodes.header.width = "75%+2";
-            this.options.nodes.header.left = "25%";
-
-            this.options.nodes.channels.show();
-            this.render();
-        }
-
-        return this;
-    }
-
-    public hideChannels(): this {
-        if (!this.options.nodes.channels.hidden) {
-            // Messages.
-            this.options.nodes.messages.width = "100%";
-            this.options.nodes.messages.left = "0%";
-
-            // Input.
-            this.options.nodes.input.width = "100%";
-            this.options.nodes.input.left = "0%";
-
-            // Header.
-            this.options.nodes.header.width = "100%";
-            this.options.nodes.header.left = "0%";
-
-            this.options.nodes.channels.hide();
-            this.render();
-        }
-
-        return this;
-    }
-
-    public toggleChannels(): this {
-        this.options.nodes.channels.visible ? this.hideChannels() : this.showChannels();
-
-        return this;
     }
 
     private setupEvents(): this {

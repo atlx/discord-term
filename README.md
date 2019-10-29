@@ -19,6 +19,8 @@ $ npm install --global discord-term
 $ dterm
 ```
 
+Note that if you're having some trouble installing, you might have to open a Command Prompt (or Terminal) **with administrator/root privileges**.
+
 That's it! Although keep in mind that since the project is relatively new, you might encounter some bugs here and there.
 
 **This project has been tested and verified as working on native Ubuntu terminal and Windows command prompt + PowerShell using Node.js 10**
