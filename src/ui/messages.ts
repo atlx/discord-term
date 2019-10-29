@@ -1,10 +1,9 @@
 import blessed from "blessed";
 import Atom, {AtomEvent} from "./atom";
 import {defaultState} from "../state/stateConstants";
-import {PromiseOr} from "../core/helpers";
 import UiManager from "./uiManager";
 import {updatePreset} from "../constant";
-import {HeaderEvent} from "./header";
+import {AppEvent} from "../app";
 
 export enum MessagesEvent {
     ScrollPercentageChanged = "scrollPercentageChanged",
@@ -30,7 +29,7 @@ export default class Messages extends Atom<blessed.Widgets.BoxElement> {
         }));
     }
 
-    public init(): PromiseOr<void> {
+    public init(): void {
         // Extract atoms for short access alias.
         const {atoms} = this.manager;
 
@@ -65,6 +64,17 @@ export default class Messages extends Atom<blessed.Widgets.BoxElement> {
             {
                 top: "0%",
                 height: "100%-3"
+            }
+        );
+
+        this.updateOn(
+            this.app,
+            AppEvent.ThemeChanged,
+            {
+                style: {
+                    fg: this.state.get().themeData.messages.foregroundColor,
+                    bg: this.state.get().themeData.messages.backgroundColor
+                }
             }
         );
     }

@@ -1,6 +1,6 @@
-import {TextChannel, Guild, Client, Message, Channel, DMChannel, ClientOptions} from "discord.js";
+import {TextChannel, Guild, Client, Message, DMChannel, ClientOptions} from "discord.js";
 import Utils from "./utils";
-import blessed, {Widgets} from "blessed";
+import blessed from "blessed";
 import chalk from "chalk";
 import fs from "fs";
 import clipboardy from "clipboardy";
@@ -40,6 +40,10 @@ export enum SpecialSenders {
 }
 
 export type ICommandHandler = (args: string[], app: App) => void;
+
+export enum AppEvent {
+    ThemeChanged = "themeChanged"
+}
 
 export default class App extends EventEmitter {
     /**
@@ -252,69 +256,6 @@ export default class App extends EventEmitter {
         process.exit(exitCode);
     }
 
-    public updateChannels(render: boolean = false): this {
-        if (!this.state.get().guild) {
-            return this;
-        }
-
-        // Fixes "ghost" children bug.
-        for (let i: number = 0; i < this.options.nodes.channels.children.length; i++) {
-            this.options.nodes.channels.remove(this.options.nodes.channels.children[i]);
-        }
-
-        const channels: TextChannel[] = this.state.get().guild.channels.array().filter((channel: Channel) => channel.type === "text") as TextChannel[];
-
-        for (let i: number = 0; i < channels.length; i++) {
-            let channelName: string = channels[i].name;
-
-            // TODO: Use a constant for the pattern.
-            // This fixes UI being messed up due to channel names containing unicode emojis.
-            while (/[^a-z0-9-_?]+/gm.test(channelName)) {
-                channelName = channelName.replace(/[^a-z0-9-_]+/gm, "?");
-            }
-
-            if (channelName.length > 25) {
-                channelName = channelName.substring(0, 21) + " ...";
-            }
-
-            const channelNode: Widgets.BoxElement = blessed.box({
-                style: {
-                    bg: this.state.get().themeData.channels.backgroundColor,
-                    fg: this.state.get().themeData.channels.foregroundColor,
-
-                    // TODO: Not working
-                    bold: this.state.get().channel !== undefined && this.state.get().channel.id === channels[i].id,
-
-                    hover: {
-                        bg: this.state.get().themeData.channels.backgroundColorHover,
-                        fg: this.state.get().themeData.channels.foregroundColorHover
-                    }
-                },
-
-                content: `#${channelName}`,
-                width: "100%-2",
-                height: "shrink",
-                top: i,
-                left: "0%",
-                clickable: true
-            });
-
-            channelNode.on("click", () => {
-                if (this.state.get().guild && this.state.get().channel && channels[i].id !== this.state.get().channel.id && this.state.get().guild.channels.has(channels[i].id)) {
-                    this.setActiveChannel(channels[i]);
-                }
-            });
-
-            this.options.nodes.channels.append(channelNode);
-        }
-
-        if (render) {
-            this.render(false, false);
-        }
-
-        return this;
-    }
-
     private setupInternalCommands(): this {
         setupInternalCommands(this);
 
@@ -364,40 +305,10 @@ export default class App extends EventEmitter {
             themeData: data
         });
 
-        // Messages.
-        this.options.nodes.messages.style.fg = this.state.get().themeData.messages.foregroundColor;
-        this.options.nodes.messages.style.bg = this.state.get().themeData.messages.backgroundColor;
-
-        // Input.
-        this.options.nodes.input.style.fg = this.state.get().themeData.input.foregroundColor;
-        this.options.nodes.input.style.bg = this.state.get().themeData.input.backgroundColor;
-
-        // Channels.
-        this.options.nodes.channels.style.fg = this.state.get().themeData.channels.foregroundColor;
-        this.options.nodes.channels.style.bg = this.state.get().themeData.channels.backgroundColor;
-
-        // Header.
-        this.options.nodes.header.style.fg = this.state.get().themeData.header.foregroundColor;
-        this.options.nodes.header.style.bg = this.state.get().themeData.header.backgroundColor;
-
-        this.updateChannels();
+        this.ui.atoms.channels.updateChannelList();
         this.message.system(`Applied theme '${name}' (${length} bytes)`);
 
-        return this;
-    }
-
-    private updateTitle(): this {
-        if (this.state.get().guild && this.state.get().channel) {
-            this.ui.setWindowTitle(`Discord Terminal @ ${this.state.get().guild.name} # ${this.state.get().channel.name}`);
-        }
-        else if (this.state.get().guild) {
-            this.ui.setWindowTitle(`Discord Terminal @ ${this.state.get().guild.name}`);
-        }
-        else {
-            this.ui.setWindowTitle("Discord Terminal");
-        }
-
-        return this;
+        this.emit(AppEvent.ThemeChanged, name, data);
     }
 
     public login(token: string): this {
@@ -408,7 +319,7 @@ export default class App extends EventEmitter {
         return this;
     }
 
-    public init(): this {
+    public async init(): Promise<void> {
         const clipboard: string = clipboardy.readSync();
 
         if (this.state.get().token) {
@@ -425,14 +336,15 @@ export default class App extends EventEmitter {
         }
         else {
             this.ui.atoms.composer.setText(`${this.options.commandPrefix}login `);
-            this.showHeader("{bold}Pro Tip.{/bold} Set the environment variable {bold}TOKEN{/bold} to automagically login!");
+            this.ui.atoms.header.display("{bold}Pro Tip.{/bold} Set the environment variable {bold}TOKEN{/bold} to automagically login!");
             this.message.system("Welcome! Please login using {bold}/login <token>{/bold} or {bold}/help{/bold} to view available commands");
         }
 
         this.setupEvents()
             .setupInternalCommands();
 
-        return this;
+        // Initialize UI manager.
+        await this.ui.init();
     }
 
     public setActiveGuild(guild: Guild): this {
@@ -445,7 +357,7 @@ export default class App extends EventEmitter {
         const defaultChannel: TextChannel | null = Utils.findDefaultChannel(this.state.get().guild);
 
         if (defaultChannel !== null) {
-            this.setActiveChannel(defaultChannel);
+            this.ui.atoms.channels.setActiveChannel(defaultChannel);
         }
         else {
             this.message.system(`Warning: Guild '${this.state.get().guild.name}' doesn't have any text channels`);
@@ -453,35 +365,6 @@ export default class App extends EventEmitter {
 
         this.updateTitle();
         this.updateChannels(true);
-
-        return this;
-    }
-
-    public setActiveChannel(channel: TextChannel): this {
-        this.stopTyping();
-
-        this.state.update({
-            channel
-        });
-
-
-        this.updateTitle();
-        this.message.system(`Switched to channel '{bold}${this.state.get().channel.name}{/bold}'`);
-
-        return this;
-    }
-
-    public render(hard: boolean = false, updateChannels: boolean = false): this {
-        if (updateChannels) {
-            this.updateChannels(false);
-        }
-
-        if (!hard) {
-            this.options.screen.render();
-        }
-        else {
-            this.options.screen.realloc();
-        }
 
         return this;
     }

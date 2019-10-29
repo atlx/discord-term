@@ -1,7 +1,9 @@
 import blessed from "blessed";
 import {EventEmitter} from "events";
-import {PromiseOr} from "../core/helpers";
+import {PromiseOr, LockCallback} from "../core/helpers";
 import UiManager from "./uiManager";
+import State from "../state/state";
+import App from "../app";
 
 export interface IAtomUpdateProperties {
     readonly width: string;
@@ -11,6 +13,8 @@ export interface IAtomUpdateProperties {
     readonly top: string;
 
     readonly height: string;
+
+    readonly style: any;
 }
 
 export enum AtomEvent {
@@ -46,6 +50,17 @@ export default abstract class Atom<T extends blessed.Widgets.BlessedElement = bl
 
     public abstract init(): PromiseOr<void>;
 
+    protected get app(): App {
+        return this.manager.app;
+    }
+
+    protected get state(): State {
+        return this.app.state;
+    }
+
+    /**
+     * Whether the atom is locked and will refuse to render.
+     */
     public get locked(): boolean {
         return this._locked;
     }
@@ -120,6 +135,12 @@ export default abstract class Atom<T extends blessed.Widgets.BlessedElement = bl
         this.setLocked(false);
     }
 
+    public async lockUntil(callback: LockCallback): Promise<void> {
+        this.lock();
+        await callback();
+        this.unlock();
+    }
+
     /**
      * Renders the element if the atom is unlocked.
      * It is not recommended to attach event listerns
@@ -150,8 +171,8 @@ export default abstract class Atom<T extends blessed.Widgets.BlessedElement = bl
         this.render();
     }
 
-    public updateOn(atom: Atom, event: AtomEvent | string, properties: Partial<IAtomUpdateProperties>): void {
-        atom.on(event, () => {
+    public updateOn(eventSource: EventEmitter, event: AtomEvent | string, properties: Partial<IAtomUpdateProperties>): void {
+        eventSource.on(event, () => {
             this.update(properties);
         });
     }

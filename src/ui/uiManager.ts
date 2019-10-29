@@ -5,7 +5,8 @@ import Composer from "./composer";
 import Header from "./header";
 import Messages from "./messages";
 import {defaultAppOptions} from "../constant";
-import Atom, {AtomEvent} from "./atom";
+import Atom from "./atom";
+import App from "../app";
 
 export enum UiManagerEvent {
     AtomAttached = "atomAttached",
@@ -32,20 +33,42 @@ export default class UiManager extends EventEmitter {
 
     public readonly allAtoms: Set<Atom>;
 
-    public constructor(atoms: IUiAtoms, screenOptions: any = defaultAppOptions.screenOptions, allAtoms: Set<Atom> = new Set()) {
+    public readonly app: App;
+
+    public constructor(app: App, atoms: IUiAtoms, screenOptions: any = defaultAppOptions.screenOptions, allAtoms: Set<Atom> = new Set()) {
         super();
 
+        this.app = app;
         this.screen = new blessed.Widgets.Screen(screenOptions);
         this.atoms = atoms;
         this.allAtoms = allAtoms;
 
         // Attach built-in atoms.
-        this.attachAtoms(
-            atoms.channels,
-            atoms.composer,
-            atoms.header,
-            atoms.messages
-        );
+        for (const atomName in atoms) {
+            this.attachAtoms(atoms[atomName]);
+        }
+    }
+
+    public updateTitle(): void {
+        if (this.app.state.get().guild && this.app.state.get().channel) {
+            this.app.ui.setWindowTitle(`Discord Terminal @ ${this.app.state.get().guild.name} # ${this.app.state.get().channel.name}`);
+        }
+        else if (this.app.state.get().guild) {
+            this.app.ui.setWindowTitle(`Discord Terminal @ ${this.app.state.get().guild.name}`);
+        }
+        else {
+            this.app.ui.setWindowTitle("Discord Terminal");
+        }
+    }
+
+    /**
+     * Initialize all attached atoms.
+     */
+    public async init(): Promise<void> {
+        // Loop through and initialize all attached atoms.
+        for (const atom of this.allAtoms) {
+            await atom.init();
+        }
     }
 
     // TODO: Add a way to access attached atoms (non-built-in atoms).
@@ -71,12 +94,15 @@ export default class UiManager extends EventEmitter {
     }
 
     /**
-     * Renders all attached atoms.
+     * Renders all child elements of the screen
+     * element.
      */
-    public async render(): Promise<void> {
-        // Loop through and render all attached atoms.
-        for (const atom of this.allAtoms) {
-            await atom.render();
+    public async render(hard: boolean = false): Promise<void> {
+        if (hard) {
+            this.screen.realloc();
+        }
+        else {
+            this.screen.render();
         }
 
         // Emit the corresponding event.

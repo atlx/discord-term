@@ -1,9 +1,10 @@
 import blessed from "blessed";
-import Atom, {AtomEvent} from "./atom";
+import {AtomEvent} from "./atom";
 import {defaultState} from "../state/stateConstants";
 import UiManager from "./uiManager";
 import {updatePreset} from "../constant";
 import TextAtom, {TextAtomEvent} from "./textAtom";
+import {AppEvent} from "../app";
 
 export enum ComposerEvent {
     FocusChanged = "focusChanged"
@@ -39,6 +40,20 @@ export default class Composer extends TextAtom<blessed.Widgets.TextboxElement> {
             this.manager.atoms.channels,
             AtomEvent.Hidden,
             updatePreset.expand
+        );
+
+        // Abstract theme info. for short access alias.
+        const themeData = this.state.get().themeData.input;
+
+        this.updateOn(
+            this.app,
+            AppEvent.ThemeChanged,
+            {
+                style: {
+                    fg: themeData.foregroundColor,
+                    bg: themeData.backgroundColor
+                }
+            }
         );
     }
 

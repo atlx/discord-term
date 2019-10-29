@@ -4,6 +4,7 @@ import {defaultState} from "../state/stateConstants";
 import UiManager from "./uiManager";
 import {updatePreset} from "../constant";
 import TextAtom from "./textAtom";
+import {AppEvent} from "../app";
 
 export default class Header extends TextAtom<blessed.Widgets.BoxElement> {
     public constructor(manager: UiManager) {
@@ -37,6 +38,20 @@ export default class Header extends TextAtom<blessed.Widgets.BoxElement> {
             AtomEvent.Shown,
             updatePreset.expand
         );
+
+        // Abstract theme info. for short access alias.
+        const themeData = this.state.get().themeData.header;
+
+        this.updateOn(
+            this.app,
+            AppEvent.ThemeChanged,
+            {
+                style: {
+                    fg: themeData.foregroundColor,
+                    bg: themeData.backgroundColor
+                }
+            }
+        );
     }
 
     public get text(): string {
@@ -60,7 +75,10 @@ export default class Header extends TextAtom<blessed.Widgets.BoxElement> {
             }
 
             this.state.update({
-                autoHideHeaderTimeout: setTimeout(this.hideHeader.bind(this), text.length * this.options.headerAutoHideTimeoutPerChar)
+                autoHideHeaderTimeout: setTimeout(
+                    () => this.hide(),
+                    text.length * this.app.options.headerAutoHideTimeoutPerChar
+                )
             });
         }
 
