@@ -9,6 +9,9 @@ export default class BlueprintSet<TType extends {} = any, TActivable extends New
     }
 
     public instanceOf(other: any): boolean {
+        // TODO: Cannot determine whether instanceof when comparing types (not instances).
+        return true;
+
         for (const item of this.items) {
             if (!item.instanceOf(other)) {
                 return false;

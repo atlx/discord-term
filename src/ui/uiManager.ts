@@ -1,4 +1,4 @@
-import blessed from "blessed";
+import blessed, {screen} from "blessed";
 import {EventEmitter} from "events";
 import Channels from "./channels";
 import Composer from "./composer";
@@ -71,7 +71,7 @@ export default class UiManager extends EventEmitter {
         }
 
         this.app = this.options.app;
-        this.screen = new blessed.Widgets.Screen(this.options.screenOptions);
+        this.screen = screen(this.options.screenOptions);
         this.allAtoms = this.options.allAtoms;
 
         // Activate & attach provided atom blueprint(s).
