@@ -1,21 +1,25 @@
 import {Newable} from "./helpers";
 
-export default class Blueprint<T extends Newable = any> {
-    protected readonly type: any;
+export default class Blueprint<TType extends {} = any, TActivable extends Newable = any> {
+    public readonly type: TActivable;
 
-    public constructor(type: any) {
+    public constructor(type: TActivable) {
         this.type = type;
     }
 
-    public instanceOf(other: any): boolean {
-        return other instanceof this.type;
+    public instanceOf(type: any): boolean {
+        return type instanceof this.type;
     }
 
-    public is(other: any): boolean {
-        return this.type === other;
+    public is(type: any): boolean {
+        return this.type === type;
     }
 
-    public activate(...args: any[]): T {
+    /**
+     * Activate the blueprint without providing type
+     * support of the constructor signature.
+     */
+    public activate(...args: any[]): TType {
         return new this.type(args);
     }
 }

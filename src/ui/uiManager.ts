@@ -5,7 +5,7 @@ import Composer from "./composer";
 import Header from "./header";
 import Messages from "./messages";
 import {defaultAppOptions} from "../constant";
-import Atom from "./atom";
+import Atom, {IAtomActivable, IAtom} from "./atom";
 import App from "../app";
 import BlueprintSet from "../misc/blueprintSet";
 
@@ -27,31 +27,59 @@ export interface IUiAtoms {
     readonly messages: Messages;
 }
 
+export interface IUiManagerPartialOptions {
+    readonly screenOptions?: any;
+
+    readonly allAtoms?: Set<IAtom>;
+}
+
+export interface IUiManagerOptions extends IUiManagerPartialOptions {
+    readonly app: App;
+
+    readonly atomBlueprints: BlueprintSet<IAtom, IAtomActivable>;
+}
+
 export default class UiManager extends EventEmitter {
+    public static get defaultOptions(): Required<IUiManagerPartialOptions> {
+        return {
+            screenOptions: defaultAppOptions.screenOptions,
+            allAtoms: new Set()
+        };
+    }
+
     public readonly atoms: IUiAtoms;
 
     public readonly screen: blessed.Widgets.Screen;
 
-    public readonly allAtoms: Set<Atom>;
+    public readonly allAtoms: Set<IAtom>;
 
     public readonly app: App;
 
-    public constructor(app: App, atomBlueprints: BlueprintSet, screenOptions: any = defaultAppOptions.screenOptions, allAtoms: Set<Atom> = new Set()) {
+    protected readonly options: Required<IUiManagerOptions>;
+
+    public constructor(options: IUiManagerOptions) {
         super();
 
+        this.options = {
+            ...UiManager.defaultOptions,
+            ...options
+        };
+
         // Verify atom blueprints.
-        if (!atomBlueprints.instanceOf(Atom)) {
+        if (!this.options.atomBlueprints.instanceOf(Atom)) {
             throw new Error("Expected atom blueprints' types to inherit from the base Atom class");
         }
 
-        this.app = app;
-        this.screen = new blessed.Widgets.Screen(screenOptions);
-        this.atoms = atoms;
-        this.allAtoms = allAtoms;
+        this.app = this.options.app;
+        this.screen = new blessed.Widgets.Screen(this.options.screenOptions);
+        this.allAtoms = this.options.allAtoms;
 
-        // Attach built-in atoms.
-        for (const atomName in atoms) {
-            this.attachAtoms(atoms[atomName]);
+        // Activate & attach provided atom blueprint(s).
+        for (const atomBlueprint of this.options.atomBlueprints.items) {
+            const atom: IAtom = new atomBlueprint.type(this);
+
+            // Attach newly created atom instance.
+            this.attachAtoms(atom);
         }
     }
 
@@ -78,7 +106,7 @@ export default class UiManager extends EventEmitter {
     }
 
     // TODO: Add a way to access attached atoms (non-built-in atoms).
-    public attachAtoms(...atoms: Atom[]): void {
+    public attachAtoms(...atoms: IAtom[]): void {
         for (const atom of atoms) {
             // Atom must not be currently attached.
             if (!this.allAtoms.has(atom)) {

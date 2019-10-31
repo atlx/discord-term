@@ -42,7 +42,9 @@ export default function setupEvents(app: App): void {
     });
 
     composerEl.key("enter", () => {
-        let input: string = app.getInput(true);
+        let input: string = app.ui.atoms.composer.text;
+
+        app.ui.atoms.composer.clearText();
 
         const splitInput: string[] = input.split(" ");
         const tags: string[] = app.tags.getAll();

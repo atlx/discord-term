@@ -1,13 +1,13 @@
 import blessed from "blessed";
 import Atom from "./atom";
 
-export enum TextAtomEvent {
+export enum TextBasedAtomEvent {
     TextChanged = "textChanged",
 
     TextCleared = "textCleared"
 }
 
-export default abstract class TextAtom<T extends blessed.Widgets.BlessedElement> extends Atom<T> {
+export default abstract class TextBasedAtom<T extends blessed.Widgets.BlessedElement> extends Atom<T> {
     public abstract readonly text: string;
 
     public abstract setText(text: string): void;
@@ -18,6 +18,6 @@ export default abstract class TextAtom<T extends blessed.Widgets.BlessedElement>
 
     public clearText(): void {
         this.setText("");
-        this.emit(TextAtomEvent.TextCleared);
+        this.emit(TextBasedAtomEvent.TextCleared);
     }
 }

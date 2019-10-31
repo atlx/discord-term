@@ -3,10 +3,10 @@ import {AtomEvent} from "./atom";
 import {defaultState} from "../state/stateConstants";
 import UiManager from "./uiManager";
 import {updatePreset} from "../constant";
-import TextAtom from "./textAtom";
+import TextBasedAtom from "./textAtom";
 import {AppEvent} from "../app";
 
-export default class Header extends TextAtom<blessed.Widgets.BoxElement> {
+export default class Header extends TextBasedAtom<blessed.Widgets.BoxElement> {
     public constructor(manager: UiManager) {
         super(manager, blessed.box({
             top: "0%",

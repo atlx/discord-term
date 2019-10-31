@@ -5,6 +5,10 @@ import UiManager from "./uiManager";
 import State from "../state/state";
 import App from "../app";
 
+export interface IAtomActivable<T extends blessed.Widgets.BlessedElement = blessed.Widgets.BlessedElement> {
+    new(manager: UiManager): IAtom<T>;
+}
+
 export interface IAtomUpdateProperties {
     readonly width: string;
 

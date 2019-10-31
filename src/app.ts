@@ -14,7 +14,7 @@ import State, {IState, IStateOptions} from "./state/state";
 import {defaultState} from "./state/stateConstants";
 import MessageFactory from "./core/messageFactory";
 import Tags from "./tags";
-import UiManager, {IUiAtoms} from "./ui/uiManager";
+import UiManager from "./ui/uiManager";
 import Bootstrap from "./bootstrap";
 import {defaultAppOptions} from "./constant";
 
@@ -78,7 +78,12 @@ export default class App extends EventEmitter {
 
         this.state = new State(this, this.options, this.options.initialState);
         this.client = new Client(this.options.clientOptions);
-        this.ui = new UiManager(this, Bootstrap.uiAtomBlueprints);
+
+        this.ui = new UiManager({
+            atomBlueprints: Bootstrap.uiAtomBlueprints,
+            app: this
+        });
+
         this.commands = commands;
         this.message = new MessageFactory(this);
         this.tags = new Tags(this.state);
@@ -362,7 +367,7 @@ export default class App extends EventEmitter {
             this.message.system(`Warning: Guild '${this.state.get().guild.name}' doesn't have any text channels`);
         }
 
-        this.updateTitle();
-        this.updateChannels(true);
+        this.ui.updateTitle();
+        this.ui.atoms.channels.updateChannelList();
     }
 }

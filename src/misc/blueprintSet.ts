@@ -1,10 +1,10 @@
 import {Newable} from "./helpers";
 import Blueprint from "./blueprint";
 
-export default class BlueprintSet<T extends Newable = any> {
-    public readonly items: Blueprint<T>[];
+export default class BlueprintSet<TType extends {} = any, TActivable extends Newable = any> {
+    public readonly items: Blueprint<TType, TActivable>[];
 
-    public constructor(items: Blueprint<T>[]) {
+    public constructor(items: Blueprint<TType, TActivable>[]) {
         this.items = items;
     }
 

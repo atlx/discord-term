@@ -3,14 +3,14 @@ import {AtomEvent} from "./atom";
 import {defaultState} from "../state/stateConstants";
 import UiManager from "./uiManager";
 import {updatePreset} from "../constant";
-import TextAtom, {TextAtomEvent} from "./textAtom";
+import TextBasedAtom, {TextBasedAtomEvent} from "./textAtom";
 import {AppEvent} from "../app";
 
 export enum ComposerEvent {
     FocusChanged = "focusChanged"
 }
 
-export default class Composer extends TextAtom<blessed.Widgets.TextboxElement> {
+export default class Composer extends TextBasedAtom<blessed.Widgets.TextboxElement> {
     public constructor(manager: UiManager) {
         super(manager, blessed.textbox({
             left: "0%",
@@ -68,7 +68,7 @@ export default class Composer extends TextAtom<blessed.Widgets.TextboxElement> {
         }
 
         this.element.setText(text);
-        this.emit(TextAtomEvent.TextChanged, text);
+        this.emit(TextBasedAtomEvent.TextChanged, text);
         this.render();
     }
 
