@@ -1,5 +1,9 @@
 ### ✨ Discord Terminal
 
+<a href="https://discord.gg/H3eMUXp">
+    <img src="https://discordapp.com/api/guilds/572951207862206474/widget.png?style=shield" alt="Discord Server" />
+</a>
+
 An extensible Discord terminal client. Can be used with bot or user tokens.
 
 **Disclaimer**: So-called "self-bots" are against Discord's Terms of Service and therefore discouraged. I am not responsible for any loss or restriction whatsoever caused by using self-bots or this software. That being said, there's no one stopping you from risking using an account, so go head!
