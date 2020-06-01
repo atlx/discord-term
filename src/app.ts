@@ -346,8 +346,14 @@ export default class App extends EventEmitter {
         }
 
         // Fixes "ghost" children bug.
-        for (let i: number = 0; i < this.options.nodes.channels.children.length; i++) {
-            this.options.nodes.channels.remove(this.options.nodes.channels.children[i]);
+        while(true){
+            try {
+              this.options.nodes.channels.remove(this.options.nodes.channels.children[0]);
+            }
+
+            catch (error) {
+              break;
+            }
         }
 
         const channels: TextChannel[] = this.state.get().guild.channels.array().filter((channel: Channel) => channel.type === "text") as TextChannel[];
