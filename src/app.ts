@@ -1,4 +1,4 @@
-import {TextChannel, Guild, Client, Message, Channel, DMChannel, ClientOptions, GuildChannel} from "discord.js";
+import {TextChannel, Guild, Client, Message, DMChannel, ClientOptions, GuildChannel} from "discord.js";
 import Utils from "./utils";
 import blessed, {Widgets} from "blessed";
 import chalk from "chalk";
