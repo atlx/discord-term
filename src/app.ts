@@ -1,4 +1,4 @@
-import {TextChannel, Guild, Client, Message, Channel, DMChannel, ClientOptions} from "discord.js";
+import {TextChannel, Guild, Client, Message, DMChannel, ClientOptions, GuildChannel} from "discord.js";
 import Utils from "./utils";
 import blessed, {Widgets} from "blessed";
 import chalk from "chalk";
@@ -98,7 +98,7 @@ export default class App extends EventEmitter {
 
             this.message.system(`Successfully connected as {bold}${this.client.user.tag}{/bold}`);
 
-            const firstGuild: Guild = this.client.guilds.first();
+            const firstGuild: Guild = this.client.guilds.cache.first();
 
             if (firstGuild) {
                 this.setActiveGuild(firstGuild);
@@ -356,7 +356,7 @@ export default class App extends EventEmitter {
             }
         }
 
-        const channels: TextChannel[] = this.state.get().guild.channels.array().filter((channel: Channel) => channel.type === "text") as TextChannel[];
+        const channels: TextChannel[] = this.state.get().guild.channels.cache.array().filter((channel: GuildChannel) => channel.type === "text") as TextChannel[];
 
         for (let i: number = 0; i < channels.length; i++) {
             let channelName: string = channels[i].name;
@@ -394,7 +394,7 @@ export default class App extends EventEmitter {
             });
 
             channelNode.on("click", () => {
-                if (this.state.get().guild && this.state.get().channel && channels[i].id !== this.state.get().channel.id && this.state.get().guild.channels.has(channels[i].id)) {
+                if (this.state.get().guild && this.state.get().channel && channels[i].id !== this.state.get().channel.id && this.state.get().guild.channels.cache.has(channels[i].id)) {
                     this.setActiveChannel(channels[i]);
                 }
             });

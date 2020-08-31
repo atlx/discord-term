@@ -75,7 +75,7 @@ export default function setupInternalCommands(app: App): void {
             return;
         }
 
-        const message: Message = await app.state.get().channel.fetchMessage(args[0]) as Message;
+        const message: Message = await app.state.get().channel.messages.fetch(args[0]) as Message;
 
         if (message && message.editable) {
             await message.edit(args.slice(1).join(" "));
@@ -205,8 +205,8 @@ export default function setupInternalCommands(app: App): void {
             return;
         }
 
-        if (app.client.users.has(args[0])) {
-            const recipient: User = app.client.users.get(args[0]) as User;
+        if (app.client.users.cache.has(args[0])) {
+            const recipient: User = app.client.users.cache.get(args[0]);
 
             (await recipient.createDM()).send(args.slice(1).join(" ")).catch((error: Error) => {
                 app.message.system(`Unable to send message: ${error.message}`);
@@ -224,7 +224,7 @@ export default function setupInternalCommands(app: App): void {
     app.commands.set("me", () => {
         // TODO: Add valid method to check if logged in.
         if (app.client.user) {
-            app.message.system(`Logged in as {bold}${app.client.user.tag}{/bold} | {bold}${Math.round(app.client.ping)}{/bold}ms`);
+            app.message.system(`Logged in as {bold}${app.client.user.tag}{/bold} | {bold}${Math.round(app.client.ws.ping)}{/bold}ms`);
         }
         else {
             app.message.system("Not logged in");
@@ -276,7 +276,7 @@ export default function setupInternalCommands(app: App): void {
             app.state.get().trackList.splice(app.state.get().trackList.indexOf(args[0]), 1);
             app.message.system(`No longer tracking @{bold}${args[0]}{/bold}`);
         }
-        else if (app.client.users.has(args[0])) {
+        else if (app.client.users.cache.has(args[0])) {
             if (app.state.get().ignoredUsers.includes(args[0])) {
                 app.message.system("You must first stop ignoring that user");
 
@@ -336,12 +336,12 @@ export default function setupInternalCommands(app: App): void {
         if (!app.state.get().guild) {
             app.message.system("No active guild");
         }
-        else if (app.state.get().guild.channels.has(args[0])) {
+        else if (app.state.get().guild.channels.cache.has(args[0])) {
             // TODO: Verify that it's a text channel.
-            app.setActiveChannel(app.state.get().guild.channels.get(args[0]) as TextChannel);
+            app.setActiveChannel(app.state.get().guild.channels.cache.get(args[0]) as TextChannel);
         }
         else {
-            const channel: TextChannel = app.state.get().guild.channels.array().find((channel) => channel.type === "text" && (channel.name === args[0] || "#" + channel.name === args[0])) as TextChannel;
+            const channel = app.state.get().guild.channels.cache.find((channel) => channel.type === "text" && (channel.name === args[0] || "#" + channel.name === args[0])) as TextChannel;
 
             if (channel) {
                 app.setActiveChannel(channel as TextChannel);
@@ -353,8 +353,8 @@ export default function setupInternalCommands(app: App): void {
     });
 
     app.commands.set("g", (args: string[]) => {
-        if (app.client.guilds.has(args[0])) {
-            app.setActiveGuild(app.client.guilds.get(args[0]) as Guild);
+        if (app.client.guilds.cache.has(args[0])) {
+            app.setActiveGuild(app.client.guilds.cache.get(args[0]) as Guild);
         }
         else {
             app.message.system("Such guild does not exist");
