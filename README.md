@@ -1,3 +1,9 @@
+# ⚠️ Project needs active maintainers!
+
+Think you got what it takes? [Join our Discord](https://discord.gg/H3eMUXp) and contact me (@λtlas#9352) regarding maintaining this project.
+
+<br/>
+
 ### ✨ Discord Terminal
 
 An extensible Discord terminal client. Can be used with bot or user tokens.
