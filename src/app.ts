@@ -499,17 +499,17 @@ export default class App extends EventEmitter {
     public init(): this {
         const clipboard: string = clipboardy.readSync();
 
-        if (this.state.get().token) {
+        if (process.env.DTERM_TOKEN !== undefined) {
+            this.message.system("Attempting to login using environment token");
+            this.login(process.env.DTERM_TOKEN);
+        }
+        else if (this.state.get().token) {
             this.message.system(`Attempting to login using saved token; Use {bold}${this.options.commandPrefix}forget{/bold} to forget the token`);
             this.login(this.state.get().token);
         }
         else if (Pattern.token.test(clipboard)) {
             this.message.system("Attempting to login using token in clipboard");
             this.login(clipboard);
-        }
-        else if (process.env.DTERM_TOKEN !== undefined) {
-            this.message.system("Attempting to login using environment token");
-            this.login(process.env.DTERM_TOKEN);
         }
         else {
             this.options.nodes.input.setValue(`${this.options.commandPrefix}login `);
