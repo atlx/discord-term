@@ -74,13 +74,12 @@ export default function setupInternalCommands(app: App): void {
         if (!args[0] || !args[1] || !app.state.get().channel) {
             return;
         }
-
-        const message: Message = await app.state.get().channel.messages.fetch(args[0]) as Message;
-
-        if (message && message.editable) {
+        
+        try {
+            const message: Message = await app.state.get().channel.messages.fetch(args[0]) as Message;
             await message.edit(args.slice(1).join(" "));
         }
-        else {
+        catch {
             app.message.system("That message doesn't exist or it is not editable");
         }
     });
