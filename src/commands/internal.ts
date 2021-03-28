@@ -204,6 +204,7 @@ export default function setupInternalCommands(app: App): void {
             return;
         }
 
+        args[0] = args[0].replace(/\D/g, "");
         if (app.client.users.cache.has(args[0])) {
             const recipient: User = app.client.users.cache.get(args[0]);
 
